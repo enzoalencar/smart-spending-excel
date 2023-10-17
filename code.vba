@@ -67,7 +67,7 @@ Sub btnAdd_spend_table()
     End If
     
     ' Verificar se houve troca de mês
-    If Month(wsContas.Range("B10")) <> "" And Month(wsContas.Range("B10")) <> Month(wsContas.Range("B6")) Then
+    If wsContas.Range("B10").value <> "" And Month(wsContas.Range("B10")) <> Month(wsContas.Range("B6")) Then
         MsgBox "O mês da data inserida é diferente do mês do último dado da tabela.", vbExclamation
         MsgBox "Clique no botão REINICIAR para gerar o gráfico do mês passado e uma nova tabela.", vbExclamation
         Exit Sub
@@ -114,34 +114,43 @@ End Sub
 Sub btnReset_table()
     Dim wsMenu As Worksheet
     Dim wsContas As Worksheet
-    Dim lastRow As Long
-    Dim ws As Worksheet
+    Dim spend_tbl As ListObject
+    Dim spend_chrt As ChartObject
+    Dim chartLeft As Double
+    Dim chartTop As Double
     Dim chartRange As Range
-    Dim chrt As ChartObject
+    Dim newRange As Range
+    Dim response As VbMsgBoxResult
 
-    ' Defina a planilha que você deseja trabalhar
-    Set wsMenu = ThisWorkbook.Sheets("Menu")
-    Set wsContas = ThisWorkbook.Sheets("Contas")
-
-    ' Encontra a última linha com dados na coluna A
-    lastRow = ws.Cells(ws.Rows.Count, "A").End(xlUp).Row
-
-    ' Define o range da tabela
-    Set chartRange = ws.Range("A1:B" & lastRow)
-
-    ' Cria um gráfico com base nos dados da tabela
-    Set chrt = ws.ChartObjects.add(Left:=100, Width:=375, Top:=75, Height:=225)
-    chrt.Chart.SetSourceData Source:=chartRange
-    chrt.Chart.HasTitle = True
-    chrt.Chart.ChartTitle.Text = "Título do seu gráfico"
-    chrt.Chart.ChartType = xlXYScatterLines ' Escolha o tipo de gráfico que deseja
-
-    ' Exclui os dados da tabela original
-    chartRange.ClearContents
-
-    ' Deixa apenas a linha do cabeçalho e uma linha em branco
-    ws.Rows("3:" & lastRow).Delete
-
+    ' Pergunte ao usuário se ele deseja realmente excluir a última linha
+    response = MsgBox("Você realmente deseja gerar um gráfico e reiniciar a tabela?", vbYesNo + vbQuestion, "Confirmar Exclusão")
+    
+    If response = vbYes Then
+        Set wsMenu = ThisWorkbook.Sheets("Menu")
+        Set wsContas = ThisWorkbook.Sheets("Contas")
+        Set spend_tbl = wsContas.ListObjects("main_tbl")
+        
+        ' Verificar se a tabela tem mais de uma linha (excluindo o cabeçalho)
+        If spend_tbl.ListRows.Count > 0 Then
+            Set chartRange = wsContas.Range(spend_tbl.ListColumns(3).Range.Address, spend_tbl.ListColumns(4).Range.Address)
+        
+            ' Cria um gráfico com base nos dados da tabela
+            chartLeft = wsContas.Cells(1, "G").Left
+            chartTop = wsContas.Cells(13, 1).Top
+            
+            Set spend_chrt = wsContas.ChartObjects.add(Left:=chartLeft, Width:=350, Top:=chartTop, Height:=210)
+            spend_chrt.Chart.SetSourceData Source:=chartRange
+            spend_chrt.Chart.HasTitle = True
+            spend_chrt.Chart.chartTitle.Text = "Distribuição Financeira"
+            spend_chrt.Chart.chartType = xlPie
+        
+            spend_tbl.DataBodyRange.ClearContents
+            Set newRange = spend_tbl.HeaderRowRange.Resize(2)
+            spend_tbl.Resize newRange
+        Else
+            MsgBox "Não foi possível gerar um gráfico, verifique se a tabela possui dados.", vbCritical, "Erro"
+        End If
+    End If
 End Sub
 
 Sub btnDelete_item_table()
@@ -150,14 +159,15 @@ Sub btnDelete_item_table()
     Dim lastRow As Long
     Dim decrementValue As Long
     Dim selectedCategory As Variant
-    
-    Set wsMenu = ThisWorkbook.Sheets("Menu")
-    Set wsContas = ThisWorkbook.Sheets("Contas")
+    Dim response As VbMsgBoxResult
     
     ' Pergunte ao usuário se ele deseja realmente excluir a última linha
-    resposta = MsgBox("Você realmente deseja excluir a última linha?", vbYesNo + vbQuestion, "Confirmar Exclusão")
+    response = MsgBox("Você realmente deseja excluir a última linha?", vbYesNo + vbQuestion, "Confirmar Exclusão")
     
-    If resposta = vbYes Then
+    If response = vbYes Then
+        Set wsMenu = ThisWorkbook.Sheets("Menu")
+        Set wsContas = ThisWorkbook.Sheets("Contas")
+    
         lastRow = wsContas.Cells(wsContas.Rows.Count, "B").End(xlUp).Row
         decrementValue = wsContas.Cells(lastRow, "E").value
         
