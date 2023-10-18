@@ -1,10 +1,8 @@
 Sub reset()
     Dim wsMenu As Worksheet
-    Dim wsCalc As Worksheet
     Dim wsContas As Worksheet
     
     Set wsMenu = ThisWorkbook.Sheets("Menu")
-    Set wsCalc = ThisWorkbook.Sheets("Calculos")
     Set wsContas = ThisWorkbook.Sheets("Contas")
 
     wsMenu.Range("C2").value = 0
@@ -14,19 +12,20 @@ Sub reset()
     wsMenu.Range("F11").value = 0
     wsMenu.Range("F12").value = 0
     wsMenu.Range("F13").value = 0
+    wsMenu.Range("F14").value = 0
 
 End Sub
 
 Sub btnAdd_value_balance()
     Dim wsMenu As Worksheet
-    Dim wsCalc As Worksheet
     Dim wsContas As Worksheet
+    Dim wsCalc As Worksheet
     Dim balance As Long
     Dim new_value As Long
 
     Set wsMenu = ThisWorkbook.Sheets("Menu")
-    Set wsCalc = ThisWorkbook.Sheets("Calculos")
     Set wsContas = ThisWorkbook.Sheets("Contas")
+    Set wsCalc = ThisWorkbook.Sheets("Calculos")
     
     If WorksheetFunction.CountA(wsMenu.Range("B7")) < 1 Then
         MsgBox "Preencha todas as células antes de adicionar.", vbExclamation
@@ -36,11 +35,12 @@ Sub btnAdd_value_balance()
     ' Adicionar valor
     wsMenu.Range("C2").value = wsMenu.Range("C2").value + wsMenu.Range("B7").value
     wsContas.Range("C2").value = wsContas.Range("C2").value + wsMenu.Range("B7").value
-    wsMenu.Range("F9").value = wsMenu.Range("F9").value + (wsMenu.Range("B7").value * wsCalc.Range("C4").value)
-    wsMenu.Range("F10").value = wsMenu.Range("F10").value + (wsMenu.Range("B7").value * wsCalc.Range("C5").value)
-    wsMenu.Range("F11").value = wsMenu.Range("F11").value + (wsMenu.Range("B7").value * wsCalc.Range("C6").value)
-    wsMenu.Range("F12").value = wsMenu.Range("F12").value + (wsMenu.Range("B7").value * wsCalc.Range("C7").value)
-    wsMenu.Range("F13").value = wsMenu.Range("F13").value + (wsMenu.Range("B7").value * wsCalc.Range("C8").value)
+    wsMenu.Range("F9").value = wsMenu.Range("F9").value + (wsMenu.Range("B7").value * wsCalc.Range("C12").value)
+    wsMenu.Range("F10").value = wsMenu.Range("F10").value + (wsMenu.Range("B7").value * wsCalc.Range("C13").value)
+    wsMenu.Range("F11").value = wsMenu.Range("F11").value + (wsMenu.Range("B7").value * wsCalc.Range("C14").value)
+    wsMenu.Range("F12").value = wsMenu.Range("F12").value + (wsMenu.Range("B7").value * wsCalc.Range("C15").value)
+    wsMenu.Range("F13").value = wsMenu.Range("F13").value + (wsMenu.Range("B7").value * wsCalc.Range("C16").value)
+    wsMenu.Range("F14").value = wsMenu.Range("F14").value + (wsMenu.Range("B7").value * wsCalc.Range("C17").value)
     
     wsMenu.Range("B7").ClearContents
     
@@ -49,12 +49,14 @@ End Sub
 Sub btnAdd_spend_table()
     Dim wsMenu As Worksheet
     Dim wsContas As Worksheet
+    Dim wsCalc As Worksheet
     Dim newRow As Long
     Dim decrementValue As Long
     Dim selectedCategory As Variant
 
     Set wsMenu = ThisWorkbook.Sheets("Menu")
     Set wsContas = ThisWorkbook.Sheets("Contas")
+    Set wsCalc = ThisWorkbook.Sheets("Calculos")
 
     ' Validação
     If WorksheetFunction.CountA(wsContas.Range("C6:E6")) < 3 Then
@@ -83,14 +85,22 @@ Sub btnAdd_spend_table()
     Select Case selectedCategory
         Case "Gastos Fixos"
             wsMenu.Range("F9").value = wsMenu.Range("F9").value - decrementValue
+            wsCalc.Range("F12").value = wsCalc.Range("F12").value + decrementValue
         Case "Longo-Termo"
             wsMenu.Range("F10").value = wsMenu.Range("F10").value - decrementValue
+            wsCalc.Range("F13").value = wsCalc.Range("F13").value + decrementValue
         Case "Diversão"
             wsMenu.Range("F11").value = wsMenu.Range("F11").value - decrementValue
+            wsCalc.Range("F14").value = wsCalc.Range("F14").value + decrementValue
         Case "Educação"
             wsMenu.Range("F12").value = wsMenu.Range("F12").value - decrementValue
+            wsCalc.Range("F15").value = wsCalc.Range("F15").value + decrementValue
         Case "Investimentos"
             wsMenu.Range("F13").value = wsMenu.Range("F13").value - decrementValue
+            wsCalc.Range("F16").value = wsCalc.Range("F16").value + decrementValue
+        Case "Doação"
+            wsMenu.Range("F13").value = wsMenu.Range("F13").value - decrementValue
+            wsCalc.Range("F17").value = wsCalc.Range("F17").value + decrementValue
     End Select
 
     ' Adicionar despesa à tabela
@@ -114,54 +124,34 @@ End Sub
 Sub btnReset_table()
     Dim wsMenu As Worksheet
     Dim wsContas As Worksheet
+    Dim wsCalc As Worksheet
     Dim spend_tbl As ListObject
-    Dim spend_chrt As ChartObject
-    Dim chartLeft As Double
-    Dim chartTop As Double
-    Dim chartRange As Range
     Dim newRange As Range
     Dim response As VbMsgBoxResult
-    Dim picRange As Range
 
     ' Pergunte ao usuário se ele deseja realmente excluir a última linha
-    response = MsgBox("Você realmente deseja gerar um gráfico e reiniciar a tabela?", vbYesNo + vbQuestion, "Confirmar Exclusão")
+    response = MsgBox("Você realmente deseja reiniciar a tabela?", vbYesNo + vbQuestion, "Confirmar Exclusão")
     
     If response = vbYes Then
         Set wsMenu = ThisWorkbook.Sheets("Menu")
         Set wsContas = ThisWorkbook.Sheets("Contas")
+        Set wsCalc = ThisWorkbook.Sheets("Calculos")
         Set spend_tbl = wsContas.ListObjects("main_tbl")
-        
-        ' Excluir o gráfico existente, se houver
-        On Error Resume Next
-        Set spend_chrt = wsContas.ChartObjects("MyChart")
-        spend_chrt.Delete
-        On Error GoTo 0
         
         ' Verificar se a tabela tem mais de uma linha (excluindo o cabeçalho)
         If spend_tbl.ListRows.Count > 0 Then
-            Set chartRange = wsContas.Range(spend_tbl.ListColumns(3).Range.Address, spend_tbl.ListColumns(4).Range.Address)
-        
-            ' Cria um gráfico com base nos dados da tabela
-            chartLeft = wsContas.Cells(1, "G").Left
-            chartTop = wsContas.Cells(13, 1).Top
-            
-            Set spend_chrt = wsContas.ChartObjects.add(Left:=chartLeft, Width:=350, Top:=chartTop, Height:=210)
-            spend_chrt.Name = "MyChart"
-            spend_chrt.Chart.SetSourceData Source:=chartRange
-            spend_chrt.Chart.HasTitle = True
-            spend_chrt.Chart.chartTitle.Text = "Distribuição Financeira"
-            spend_chrt.Chart.chartType = xlPie
-            
-            ' Copie o gráfico e cole como imagem para desvincular os dados
-            spend_chrt.Chart.CopyPicture Format:=xlPicture
-            spend_chrt.Delete
-            wsContas.Paste wsContas.Range("G13")
-        
             spend_tbl.DataBodyRange.ClearContents
             Set newRange = spend_tbl.HeaderRowRange.Resize(2)
             spend_tbl.Resize newRange
+            
+            wsCalc.Range("F12").value = 0
+            wsCalc.Range("F13").value = 0
+            wsCalc.Range("F14").value = 0
+            wsCalc.Range("F15").value = 0
+            wsCalc.Range("F16").value = 0
+            wsCalc.Range("F17").value = 0
         Else
-            MsgBox "Não foi possível gerar um gráfico, verifique se a tabela possui dados.", vbCritical, "Erro"
+            MsgBox "Verifique se a tabela realmente possui dados para serem limpos.", vbCritical, "Erro"
         End If
     End If
 End Sub
@@ -169,6 +159,7 @@ End Sub
 Sub btnDelete_item_table()
     Dim wsMenu As Worksheet
     Dim wsContas As Worksheet
+    Dim wsCalc As Worksheet
     Dim lastRow As Long
     Dim decrementValue As Long
     Dim selectedCategory As Variant
@@ -180,6 +171,7 @@ Sub btnDelete_item_table()
     If response = vbYes Then
         Set wsMenu = ThisWorkbook.Sheets("Menu")
         Set wsContas = ThisWorkbook.Sheets("Contas")
+        Set wsCalc = ThisWorkbook.Sheets("Calculos")
         Set spend_tbl = wsContas.ListObjects("main_tbl")
         
         If spend_tbl.ListRows.Count > 1 Then
@@ -193,19 +185,28 @@ Sub btnDelete_item_table()
             Select Case selectedCategory
                 Case "Gastos Fixos"
                     wsMenu.Range("F9").value = wsMenu.Range("F9").value + decrementValue
+                    wsCalc.Range("F12").value = wsCalc.Range("F12").value - decrementValue
                 Case "Longo-Termo"
                     wsMenu.Range("F10").value = wsMenu.Range("F10").value + decrementValue
+                    wsCalc.Range("F13").value = wsCalc.Range("F13").value - decrementValue
                 Case "Diversão"
                     wsMenu.Range("F11").value = wsMenu.Range("F11").value + decrementValue
+                    wsCalc.Range("F14").value = wsCalc.Range("F14").value - decrementValue
                 Case "Educação"
                     wsMenu.Range("F12").value = wsMenu.Range("F12").value + decrementValue
+                    wsCalc.Range("F15").value = wsCalc.Range("F15").value - decrementValue
                 Case "Investimentos"
                     wsMenu.Range("F13").value = wsMenu.Range("F13").value + decrementValue
+                    wsCalc.Range("F16").value = wsCalc.Range("F16").value - decrementValue
+                Case "Doação"
+                    wsMenu.Range("F13").value = wsMenu.Range("F13").value + decrementValue
+                    wsCalc.Range("F17").value = wsCalc.Range("F17").value - decrementValue
             End Select
             
             wsContas.Rows(lastRow).Delete
         Else
             MsgBox "Não foi possível deletar a linha, já está no mínimo possível.", vbCritical
+            MsgBox "Se ainda assim quiser limpar as informações, tente reiniciar a tabela.", vbInformation
         End If
     End If
 End Sub
