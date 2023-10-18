@@ -121,6 +121,7 @@ Sub btnReset_table()
     Dim chartRange As Range
     Dim newRange As Range
     Dim response As VbMsgBoxResult
+    Dim picRange As Range
 
     ' Pergunte ao usuário se ele deseja realmente excluir a última linha
     response = MsgBox("Você realmente deseja gerar um gráfico e reiniciar a tabela?", vbYesNo + vbQuestion, "Confirmar Exclusão")
@@ -129,6 +130,12 @@ Sub btnReset_table()
         Set wsMenu = ThisWorkbook.Sheets("Menu")
         Set wsContas = ThisWorkbook.Sheets("Contas")
         Set spend_tbl = wsContas.ListObjects("main_tbl")
+        
+        ' Excluir o gráfico existente, se houver
+        On Error Resume Next
+        Set spend_chrt = wsContas.ChartObjects("MyChart")
+        spend_chrt.Delete
+        On Error GoTo 0
         
         ' Verificar se a tabela tem mais de uma linha (excluindo o cabeçalho)
         If spend_tbl.ListRows.Count > 0 Then
@@ -139,10 +146,16 @@ Sub btnReset_table()
             chartTop = wsContas.Cells(13, 1).Top
             
             Set spend_chrt = wsContas.ChartObjects.add(Left:=chartLeft, Width:=350, Top:=chartTop, Height:=210)
+            spend_chrt.Name = "MyChart"
             spend_chrt.Chart.SetSourceData Source:=chartRange
             spend_chrt.Chart.HasTitle = True
             spend_chrt.Chart.chartTitle.Text = "Distribuição Financeira"
             spend_chrt.Chart.chartType = xlPie
+            
+            ' Copie o gráfico e cole como imagem para desvincular os dados
+            spend_chrt.Chart.CopyPicture Format:=xlPicture
+            spend_chrt.Delete
+            wsContas.Paste wsContas.Range("G13")
         
             spend_tbl.DataBodyRange.ClearContents
             Set newRange = spend_tbl.HeaderRowRange.Resize(2)
@@ -167,28 +180,32 @@ Sub btnDelete_item_table()
     If response = vbYes Then
         Set wsMenu = ThisWorkbook.Sheets("Menu")
         Set wsContas = ThisWorkbook.Sheets("Contas")
-    
-        lastRow = wsContas.Cells(wsContas.Rows.Count, "B").End(xlUp).Row
-        decrementValue = wsContas.Cells(lastRow, "E").value
+        Set spend_tbl = wsContas.ListObjects("main_tbl")
         
-        wsMenu.Range("C2").value = wsMenu.Range("C2").value + decrementValue
-        wsContas.Range("C2").value = wsContas.Range("C2").value + decrementValue
-        
-        selectedCategory = wsContas.Cells(lastRow, "D").value
-        Select Case selectedCategory
-            Case "Gastos Fixos"
-                wsMenu.Range("F9").value = wsMenu.Range("F9").value + decrementValue
-            Case "Longo-Termo"
-                wsMenu.Range("F10").value = wsMenu.Range("F10").value + decrementValue
-            Case "Diversão"
-                wsMenu.Range("F11").value = wsMenu.Range("F11").value + decrementValue
-            Case "Educação"
-                wsMenu.Range("F12").value = wsMenu.Range("F12").value + decrementValue
-            Case "Investimentos"
-                wsMenu.Range("F13").value = wsMenu.Range("F13").value + decrementValue
-        End Select
-        
-        wsContas.Rows(lastRow).Delete
+        If spend_tbl.ListRows.Count > 1 Then
+            lastRow = wsContas.Cells(wsContas.Rows.Count, "B").End(xlUp).Row
+            decrementValue = wsContas.Cells(lastRow, "E").value
+            
+            wsMenu.Range("C2").value = wsMenu.Range("C2").value + decrementValue
+            wsContas.Range("C2").value = wsContas.Range("C2").value + decrementValue
+            
+            selectedCategory = wsContas.Cells(lastRow, "D").value
+            Select Case selectedCategory
+                Case "Gastos Fixos"
+                    wsMenu.Range("F9").value = wsMenu.Range("F9").value + decrementValue
+                Case "Longo-Termo"
+                    wsMenu.Range("F10").value = wsMenu.Range("F10").value + decrementValue
+                Case "Diversão"
+                    wsMenu.Range("F11").value = wsMenu.Range("F11").value + decrementValue
+                Case "Educação"
+                    wsMenu.Range("F12").value = wsMenu.Range("F12").value + decrementValue
+                Case "Investimentos"
+                    wsMenu.Range("F13").value = wsMenu.Range("F13").value + decrementValue
+            End Select
+            
+            wsContas.Rows(lastRow).Delete
+        Else
+            MsgBox "Não foi possível deletar a linha, já está no mínimo possível.", vbCritical
+        End If
     End If
-
 End Sub
