@@ -1,21 +1,3 @@
-Sub reset()
-    Dim wsMenu As Worksheet
-    Dim wsContas As Worksheet
-    
-    Set wsMenu = ThisWorkbook.Sheets("Menu")
-    Set wsContas = ThisWorkbook.Sheets("Contas")
-
-    wsMenu.Range("C2").value = 0
-    wsContas.Range("C2").value = 0
-    wsMenu.Range("F9").value = 0
-    wsMenu.Range("F10").value = 0
-    wsMenu.Range("F11").value = 0
-    wsMenu.Range("F12").value = 0
-    wsMenu.Range("F13").value = 0
-    wsMenu.Range("F14").value = 0
-
-End Sub
-
 Sub btnAdd_value_balance()
     Dim wsMenu As Worksheet
     Dim wsContas As Worksheet
