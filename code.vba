@@ -126,12 +126,12 @@ Sub btnReset_table()
             Set newRange = spend_tbl.HeaderRowRange.Resize(2)
             spend_tbl.Resize newRange
             
-            wsCalc.Range("F12").value = 0
-            wsCalc.Range("F13").value = 0
-            wsCalc.Range("F14").value = 0
-            wsCalc.Range("F15").value = 0
-            wsCalc.Range("F16").value = 0
-            wsCalc.Range("F17").value = 0
+            wsCalc.Range("F12").value = ""
+            wsCalc.Range("F13").value = ""
+            wsCalc.Range("F14").value = ""
+            wsCalc.Range("F15").value = ""
+            wsCalc.Range("F16").value = ""
+            wsCalc.Range("F17").value = ""
         Else
             MsgBox "Verifique se a tabela realmente possui dados para serem limpos.", vbCritical, "Erro"
         End If
