@@ -17,7 +17,7 @@ Para garantir uma experiência do usuário mais fluida e amigável, todas as mac
   - Diversão (10%)
   - Educação (10%)
   - Investimentos (10%)
-  - Doação (10%)
+  - Doação (5%)
   
   Após a realização de uma despesa em qualquer uma dessas contas, o saldo é atualizado automaticamente, mostrando quanto dinheiro resta na respectiva conta.
 
